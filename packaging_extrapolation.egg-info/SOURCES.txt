@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+methods_pkg/__init__.py
+packaging_extrapolation.egg-info/PKG-INFO
+packaging_extrapolation.egg-info/SOURCES.txt
+packaging_extrapolation.egg-info/dependency_links.txt
+packaging_extrapolation.egg-info/top_level.txt

@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: packaging-extrapolation
+Version: 0.0.1
+Summary: Extrapolation Methods in quantum chemistry
+Home-page: https://github.com/xizaokaiz/packaging_extrapolation.git
+Author: xizhaokai
+Author-email: xizaokaiz@foxmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# This is a test.
