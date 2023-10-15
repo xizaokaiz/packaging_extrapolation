@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "packaging_extrapolation"
+authors = [
+    {name = "ZHAOKAI XI", email = "xizaokaiz@foxmail.com"},
+]
+description = "Extrapolation methods for complete basis sets"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+version = "0.0.4"
+dependencies = [
+    "numpy","pandas","scipy"
+]
+keywords = ["basis set","extrapolation","quantum chemistry"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Repository = "https://github.com/xizaokaiz/packaging_extrapolation.git"
