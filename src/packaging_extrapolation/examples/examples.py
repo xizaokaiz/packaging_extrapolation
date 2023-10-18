@@ -1,8 +1,8 @@
-from src.packaging_extrapolation import UtilTools, Extrapolation
+from packaging_extrapolation import UtilTools, Extrapolation
 import pandas as pd
 
 if __name__ == '__main__':
-    data = pd.read_csv(r'data/hf.CSV')
+    data = pd.read_csv(r'../data/hf.CSV')
     model = Extrapolation.FitMethod()
     ext_energy_list = UtilTools.train_alpha(model,
                                             method='Feller_1992',

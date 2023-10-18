@@ -6,7 +6,6 @@ src/packaging_extrapolation/Extrapolation.py
 src/packaging_extrapolation/UtilLog.py
 src/packaging_extrapolation/UtilTools.py
 src/packaging_extrapolation/__init__.py
-src/packaging_extrapolation/examples.py
 src/packaging_extrapolation.egg-info/PKG-INFO
 src/packaging_extrapolation.egg-info/SOURCES.txt
 src/packaging_extrapolation.egg-info/dependency_links.txt

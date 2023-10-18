@@ -3,7 +3,7 @@ import itertools
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from src.packaging_extrapolation.Extrapolation import *
+from packaging_extrapolation.Extrapolation import *
 from sklearn.model_selection import KFold
 from scipy.optimize import least_squares
 
