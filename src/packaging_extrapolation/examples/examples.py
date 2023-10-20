@@ -1,6 +1,10 @@
 from packaging_extrapolation import UtilTools, Extrapolation
 import pandas as pd
 
+"""
+外推法实例
+"""
+
 if __name__ == '__main__':
     data = pd.read_csv(r'../data/hf.CSV')
     model = Extrapolation.FitMethod()
