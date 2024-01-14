@@ -29,7 +29,7 @@ class Method:
         return self.method
 
 
-# 需要拟合参数的公式，9个
+
 class FitMethod(Method):
 
     def __init__(self, *, low_card=None, high_card=None, x_energy=None, y_energy=None, method=None):
@@ -129,48 +129,36 @@ class FitMethod(Method):
         y_eng = self.y_energy
         # s = 2.091
         return (3 ** 3 * y_eng - s ** 3 * x_eng) / (3 ** 3 - s ** 3)
+        # return (self.high_card ** self.high_card * y_eng - s ** self.high_card * x_eng) / (3 ** 3 - s ** 3)
 
-    # Schwnke_2005
-    def Schwnke_2005(self, fc):
+    # Schwenke_2005
+    def Schwenke_2005(self, fc):
         x_eng = self.x_energy
         y_eng = self.y_energy
         return (y_eng - x_eng) * fc + x_eng
 
-    # USTE_x
-    def USTE_x(self):
+    # 另外方法1
+    def test1(self,la):
         x_eng = self.x_energy
         y_eng = self.y_energy
-
-        if self.low_card == 2:
-            low_card, high_card = 1.91, 2.71
-        elif self.low_card == 3:
-            low_card, high_card = 2.71, 3.68
-        elif self.low_card == 4:
-            low_card, high_card = 3.68, 4.71
-        elif self.low_card == 5:
-            low_card, high_card = 4.71, 5.7
-
-        x_3 = low_card ** 3
-        y_3 = high_card ** 3
-
-        return (y_3 * y_eng - x_3 * x_eng) / (y_3 - x_3)
+        return y_eng+la*(1-y_eng/x_eng)
 
     # 获取函数标识列表
     @staticmethod
     def get_method_str():
         methods = ['Klopper_1986', 'Feller_1992', 'Martin_1996', 'Truhlar_1998',
-                   'Jensen_2001', 'Gdanitz_2000', 'HuhLee_2003', 'Schwnke_2005', 'Bkw_2007', 'USTE_X', 'OAN_C','USTE_x']
+                   'Jensen_2001', 'Gdanitz_2000', 'HuhLee_2003', 'Schwenke_2005', 'Bkw_2007', 'USTE_X', 'OAN_C']
         return methods
 
     # 获取函数列表
     def get_method_list(self):
         methods = [self.Klopper_1986, self.Feller_1992, self.Martin_1996,
                    self.Truhlar_1998, self.Gdanitz_2000, self.HuhLee_2003,
-                   self.Schwnke_2005, self.Bkw_2007, self.USTE_X, self.OAN_C,self.USTE_x]
+                   self.Schwenke_2005, self.Bkw_2007, self.USTE_X, self.OAN_C]
         return methods
 
     # 根据函数标识获取函数
-    def get_function(self, alpha=None):
+    def get_function(self, alpha):
         method = self.method
         if method == 'Klopper_1986':
             y_pred = self.Klopper_1986(alpha)
@@ -192,10 +180,10 @@ class FitMethod(Method):
             y_pred = self.USTE_X(alpha)
         elif method == 'OAN_C':
             y_pred = self.OAN_C(alpha)
-        elif method == 'Schwnke_2005':
-            y_pred = self.Schwnke_2005(alpha)
-        elif method == 'USTE_x':
-            y_pred = self.USTE_x()
+        elif method == 'Schwenke_2005':
+            y_pred = self.Schwenke_2005(alpha)
+        elif method == 'test1':
+            y_pred = self.test1(alpha)
         else:
             raise ValueError("Invalid function name")
         return y_pred
@@ -223,11 +211,14 @@ class FitMethod(Method):
             y_pred = self.USTE_X(alpha)
         elif method == 'OAN_C':
             y_pred = self.OAN_C(alpha)
-        elif method == 'Schwnke_2005':
-            y_pred = self.Schwnke_2005(alpha)
+        elif method == 'Schwenke_2005':
+            y_pred = self.Schwenke_2005(alpha)
+        elif method == 'test1':
+            y_pred = self.test1(alpha)
         else:
             raise ValueError("Invalid function name")
-        return abs(y_pred - limit)
+        return y_pred - limit
+
 
 # USPE
 class USPE(Method):
@@ -251,16 +242,16 @@ class USPE(Method):
     # USPE
     def USPE(self, alpha):
         x = self.x
-        if x == 2:
-            x = 1.91
-        elif x == 3:
-            x = 2.71
-        elif x == 4:
-            x = 3.68
-        elif x == 5:
-            x = 4.71
-        elif x == 6:
-            x = 5.7
+        # if x == 2:
+        #     x = 1.91
+        # elif x == 3:
+        #     x = 2.71
+        # elif x == 4:
+        #     x = 3.68
+        # elif x == 5:
+        #     x = 4.71
+        # elif x == 6:
+        #     x = 5.7
         return self.x_energy + alpha * self.tot_energy / x ** 3
 
     def loss_function(self, alpha, limit):

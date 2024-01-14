@@ -4,15 +4,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from packaging_extrapolation.Extrapolation import *
+import numpy as np
 from sklearn.model_selection import KFold
 from scipy.optimize import least_squares
 
 kcal = 627.51
-
-
-# 拆分,两列数据拆成一列
-def split_data(data):
-    return data.iloc[:, 0], data.iloc[:, 1]
 
 
 # 交叉验证，返回的是索引
@@ -29,99 +25,6 @@ def k_fold_index(data, k):
 # 根据索引返回数据集
 def train_test_split(X, y, train_index, test_index):
     return X.iloc[train_index], X.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
-
-
-# 交叉验证最低水平函数
-def train_dt_k_fold(model, *, X, y, k, method, init_guess=0.001):
-    """
-        使用k-1的数据参数，拟合第k个数据集的参数
-        返回平均精度
-    """
-    level = 'dt'
-    # 评估指标
-    train_mad_list = []
-    train_rmsd_list = []
-    train_max_list = []
-    test_mad_list = []
-    test_rmsd_list = []
-    test_max_list = []
-    # 平均参数
-    avg_alpha_list = []
-    # 获取索引
-    train_index_list, test_index_list = k_fold_index(X, k)
-    k_index = 0
-    for i in range(len(train_index_list)):
-        k_index += 1
-        # 分割数据集
-        X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                            train_index_list[i], test_index_list[i])
-        # 分割x_energy,y_energy
-        x_energy_list_train, y_energy_list_train = split_data(X_train)
-        x_energy_list_test, y_energy_list_test = split_data(X_test)
-
-        # 训练，获取avg_alpha
-
-        _, alpha_list = train(model, x_energy_list=x_energy_list_train,
-                              y_energy_list=y_energy_list_train,
-                              limit_list=y_train, method=method, level=level, init_guess=init_guess)
-        avg_alpha = calc_avg_alpha(alpha_list)
-        avg_alpha = avg_alpha - calc_std(alpha_list)
-
-        # 训练集使用avg_alpha
-        energy_list = train_alpha(model, x_energy_list=x_energy_list_train,
-                                  y_energy_list=y_energy_list_train,
-                                  alpha=avg_alpha, method=method, level=level)
-
-        # 训练集误差评估指标
-        train_mad = calc_MAD(energy_list, y_train)
-        train_max_mad = calc_max_MAD(energy_list, y_train)
-        train_rmsd = calc_RMSE(energy_list, y_train)
-
-        # 验证集使用avg_alpha计算能量
-        energy_list = train_alpha(model, x_energy_list=x_energy_list_test, y_energy_list=y_energy_list_test, alpha=avg_alpha,
-                                  method=method, level=level)
-
-        # 验证集误差评估指标
-        test_mad = calc_MAD(energy_list, y_test)
-        test_max_mad = calc_max_MAD(energy_list, y_test)
-        test_rmsd = calc_RMSE(energy_list, y_test)
-
-        print('*****************************************')
-        print(k_index, '折训练集误差，MAD={:.3f} ，RMSD={:.3f}'.format(train_mad, train_rmsd))
-        print(k_index, '折训练集最大误差，MaxMAD={:.3f}'.format(train_max_mad))
-        print(k_index, '折验证集误差，MAD={:.3f} ，RMSD={:.3f}'.format(test_mad, test_rmsd))
-        print(k_index, '折验证集最大误差，MaxMAD={:.3f}'.format(test_max_mad))
-        print(k_index, '折数据集，alpha={:.5f}'.format(avg_alpha))
-        print('*****************************************')
-        print()
-
-        train_mad_list.append(train_mad)
-        train_rmsd_list.append(train_rmsd)
-        train_max_list.append(train_max_mad)
-        test_mad_list.append(test_mad)
-        test_rmsd_list.append(test_rmsd)
-        test_max_list.append(test_max_mad)
-        avg_alpha_list.append(avg_alpha)
-
-    train_avg_mad = np.average(train_mad_list)
-    train_avg_rmsd = np.average(train_rmsd_list)
-    train_avg_max = np.average(train_max_list)
-    test_avg_mad = np.average(test_mad_list)
-    test_avg_rmsd = np.average(test_rmsd_list)
-    test_avg_max = np.average(test_max_list)
-    avg_alpha = np.average(avg_alpha_list)
-
-    print('平均训练集误差，MAD={:.3f} ，RMSD={:.3f}'.format(train_avg_mad, train_avg_rmsd))
-    print('平均训练集最大误差，MaxMAD={:.3f}'.format(train_avg_max))
-    print('平均验证集误差，MAD={:.3f} ，RMSD={:.3f}'.format(test_avg_mad, test_avg_rmsd))
-    print('平均验证集最大误差，MaxMAD={:.3f}'.format(test_avg_max))
-    print('5折平均alpha，alpha={:.5f}'.format(avg_alpha))
-
-    eva_list = [train_avg_mad, train_avg_rmsd,
-                test_avg_mad, test_avg_rmsd, avg_alpha]
-
-    # 返回k折平均mad,rmsd
-    return eva_list
 
 
 # 交叉验证训练函数
@@ -156,9 +59,9 @@ def train_k_fold(model, *, X, y, k, method, level='dt', init_guess=0.001):
                                         y_energy_list_train, y_train, method, level, init_guess=init_guess)
 
         # 训练集使用avg_alpha
-        energy_list = train_alpha(model, x_energy_list=x_energy_list_train,
-                                  y_energy_list=y_energy_list_train,
-                                  alpha=avg_alpha, method=method, level=level)
+        energy_list = train(model, x_energy_list=x_energy_list_train,
+                            y_energy_list=y_energy_list_train,
+                            alpha=avg_alpha, method=method, level=level)
 
         # 训练集误差评估指标
         train_mad = calc_MAD(energy_list, y_train)
@@ -166,8 +69,8 @@ def train_k_fold(model, *, X, y, k, method, level='dt', init_guess=0.001):
         train_rmsd = calc_RMSE(energy_list, y_train)
 
         # 验证集使用avg_alpha计算能量
-        energy_list = train_alpha(model, x_energy_list=x_energy_list_test, y_energy_list=y_energy_list_test, alpha=avg_alpha,
-                                  method=method, level=level)
+        energy_list = train(model, x_energy_list=x_energy_list_test, y_energy_list=y_energy_list_test, alpha=avg_alpha,
+                            method=method, level=level)
 
         # 验证集误差评估指标
         test_mad = calc_MAD(energy_list, y_test)
@@ -256,88 +159,68 @@ def train_uspe(model, *, x_energy_list, tot_energy_list, alpha=None, limit_list=
     return energy_list
 
 
-# 指定alpha的训练函数
-def train_alpha(model, *, method, x_energy_list, y_energy_list, alpha, level='dt'):
-    energy_list = []
+def CBS(model, *, method='Feller_1992', x_energy, y_energy, alpha, level):
+    model.update_method(method=method)
+    # 基组对
+    level_map = {
+        'dt': (2, 3),
+        'tq': (3, 4),
+        'q5': (4, 5)
+    }
 
-    x_energy_list = is_list(x_energy_list)
-    y_energy_list = is_list(y_energy_list)
-
-    if level == 'dt':
-        low_card = 2
-        high_card = 3
-    elif level == 'tq':
-        low_card = 3
-        high_card = 4
-    elif level == 'q5':
-        low_card = 4
-        high_card = 5
-    elif level == '56':
-        low_card = 5
-        high_card = 6
-    else:
+    # 判断level是否有效，如果无效则抛出异常
+    if level not in level_map:
         raise ValueError('Invalid level name')
-
+    low_card, high_card = level_map[level]
+    model.update_energy(x_energy, y_energy)
     model.update_card(low_card, high_card)
-    model.update_method(method)
-    for i in range(len(x_energy_list)):
-        x_energy = x_energy_list[i]
-        y_energy = y_energy_list[i]
-
-        model.update_energy(x_energy, y_energy)
-
-        energy = model.get_function(alpha)
-        energy_list.append(energy)
-    return energy_list
+    return model.get_function(alpha)
 
 
-# 训练函数，返回能量和alpha列表
-def train(model, *, method, x_energy_list, y_energy_list, limit_list=None, init_guess=0.01, level='dt'):
-    # 默认需要拟合参数，默认需要拟合
-    flag = True
-    if limit_list is None:
-        flag = False
+def train(model, *, method, x_energy_list, y_energy_list, limit_list=None, init_guess=0.01, level='dt',
+          is_Fitting=False, alpha=None):
+    if is_Fitting is True and limit_list is None:
+        raise ValueError('Fitting requires target value')
+    if is_Fitting is False and alpha is None:
+        raise ValueError('Alpha parameter needs to be specified')
+    # alpha必需是浮点型
+    if alpha is not None and not isinstance(alpha, float):
+        raise TypeError('Alpha parameter must be a float')
+
+    flag = False
+    if is_Fitting is True:
+        alpha_list = []
+        flag = True
     energy_list = []
-    alpha_list = []
+    # 基组对
+    level_map = {
+        'dt': (2, 3),
+        'tq': (3, 4),
+        'q5': (4, 5)
+    }
 
-    x_energy_list = is_list(x_energy_list)
-    y_energy_list = is_list(y_energy_list)
-    limit_list = is_list(limit_list)
-
-    # 判断基数
-    if level == 'dt':
-        low_card = 2
-        high_card = 3
-    elif level == 'tq':
-        low_card = 3
-        high_card = 4
-    elif level == 'q5':
-        low_card = 4
-        high_card = 5
-    else:
+    # 判断level是否有效，如果无效则抛出异常
+    if level not in level_map:
         raise ValueError('Invalid level name')
-    model.update_method(method)
-    model.update_card(low_card, high_card)
+    low_card, high_card = level_map[level]
 
-    for i in range(len(x_energy_list)):
-        x_energy = x_energy_list[i]
-        y_energy = y_energy_list[i]
+    model.update_method(method=method)
+    model.update_card(low_card=low_card, high_card=high_card)
 
+    for index in x_energy_list.index.to_list():
         # 更新能量
-        model.update_energy(x_energy, y_energy)
+        model.update_energy(x_energy=x_energy_list[index], y_energy=y_energy_list[index])
 
-        # 为ture，则拟合
-        if flag:
-            limit = limit_list[i]
-            alpha = opt_alpha(model.loss_function, limit, init_guess)
-            alpha_list.append(alpha)
-            energy = calc_energy(model, alpha)
+        # 需要拟合
+        if flag is True:
+            CBS_alpha = opt_alpha(model.loss_function, limit_list[index], init_guess)
+            alpha_list.append(CBS_alpha)
+            energy_list.append(calc_energy(model, CBS_alpha))
+            continue
+        CBS_energy = model.get_function(alpha)
+        energy_list.append(CBS_energy)
 
-        else:
-            energy = calc_energy(model)
-
-        energy_list.append(energy)
-    if flag:
+    if flag is True:
         return energy_list, alpha_list
     return energy_list
 
@@ -380,12 +263,12 @@ def calc_MaxNegMAD(y_true, y_pred):
 
 # 计算MSD
 def calc_MSD(y_true, y_pred):
-    return mean_squared_error(y_true, y_pred)
+    return mean_squared_error(y_true, y_pred) * kcal
 
 
 # 计算RMSD
 def calc_RMSE(y_true, y_pred):
-    return calc_MSD(y_true, y_pred) ** 0.5 * kcal
+    return mean_squared_error(y_true, y_pred, squared=False) * kcal
 
 
 # 计算MAD
@@ -453,48 +336,6 @@ def input_result(result_df, *, index, energy_list, limit_list, alpha_list=None):
         result_df['min_alpha'][index] = calc_min_alpha(alpha_list)
         result_df['max_alpha'][index] = calc_max_alpha(alpha_list)
     return result_df
-
-
-# 列表一维化
-def flatting(ls):
-    return list(itertools.chain.from_iterable(ls))
-
-
-# 画图：一个外推水平的分子参数分布图
-def plot_alpha_value(model, *, mol_list, x_energy_list, y_energy_list, fitting_list,
-                     limit_energy, method, level='dt', init_guess=0.001):
-    _, alpha_list = train(model, method=method, x_energy_list=x_energy_list,
-                          y_energy_list=y_energy_list, limit_list=fitting_list,
-                          level=level, init_guess=init_guess)
-
-    avg_alpha = calc_avg_alpha(alpha_list)
-    # avg_alpha = round(avg_alpha, 4)
-    # alpha_std = calc_std(alpha_list)
-    # mid_alpha = calc_median(alpha_list)
-    # avg_alpha = avg_alpha - alpha_std
-    energy_list = train_alpha(model, method=method, x_energy_list=x_energy_list,
-                              y_energy_list=y_energy_list,
-                              level=level, alpha=avg_alpha)
-
-    print_information(mol_list=mol_list, energy_list=energy_list,
-                      alpha_list=alpha_list,
-                      limit_energy=limit_energy, level=level)
-
-    plot_alpha(mol_list=mol_list, alpha_list=alpha_list, level=level)
-    return energy_list, alpha_list
-
-
-def plot_alpha(*, mol_list, alpha_list, level):
-    plt.figure(figsize=(10, 6))
-    plt.plot(mol_list, alpha_list, '.')
-    plt.xticks(rotation=-80)
-    plt.xticks(fontsize=6)
-    plt.ylabel('alpha value')
-    plt.xlabel('species')
-    plt.title(level)
-    plt.tight_layout()
-    plt.grid(alpha=0.3)
-    plt.show()
 
 
 def print_information(*, mol_list, energy_list, alpha_list, limit_energy, level):
@@ -612,7 +453,8 @@ def count_val_ele(mol_list):
 
 
 # 穷举
-def exhaustion_alpha(model, *, method, x_energy_list, y_energy_list, limit_list, init_alpha, init_step=1000, level='dt'):
+def exhaustion_alpha(model, *, method, x_energy_list, y_energy_list, limit_list, init_alpha, init_step=1000,
+                     level='dt'):
     error_df = pd.DataFrame(columns=['alpha', 'MAD', 'MaxMAD'])
     mad_list = []
     max_mad_list = []
@@ -620,8 +462,8 @@ def exhaustion_alpha(model, *, method, x_energy_list, y_energy_list, limit_list,
     alpha = init_alpha
     for i in range(init_step):
         alpha_list.append(alpha)
-        energy_list = train_alpha(model, x_energy_list=x_energy_list, y_energy_list=y_energy_list,
-                                  alpha=alpha, level=level, method=method)
+        energy_list = train(model, x_energy_list=x_energy_list, y_energy_list=y_energy_list,
+                            alpha=alpha, level=level, method=method)
         mad = calc_MAD(limit_list,
                        energy_list)
         max_mad = calc_max_MAD(limit_list,
@@ -637,3 +479,171 @@ def exhaustion_alpha(model, *, method, x_energy_list, y_energy_list, limit_list,
     print('使MAD最小的alpha值为 {}，最小MAD为 {}'.format(min_mad_alpha, np.min(error_df['MAD'])))
     print('使MaxMAD最小的alpha值为：{},最小MaxMAD为 {}'.format(min_maxMad_alpha, np.min(error_df['MaxMAD'])))
     return error_df
+
+
+# 计算原子化能
+def calc_atomize_energy(*, mol_data, atom_data, level='d'):
+    if level == 'd':
+        temp = 'aug-cc-pvdz'
+    elif level == 't':
+        temp = 'aug-cc-pvtz'
+    elif level == 'q':
+        temp = 'aug-cc-pvqz'
+    elif level == '5':
+        temp = 'aug-cc-pv5z'
+    elif level == '6':
+        temp = 'aug-cc-pv6z'
+    else:
+        return ValueError('Invalid level,please input d,t,q,5 or 6.')
+
+    atom_dict = get_atom_dict(atom_data, temp)
+    energy_list = []
+    for i in mol_data.index:
+        mol_name = mol_data['mol'][i]
+        mol_energy = mol_data[temp][i]
+        atomize_energy = get_atomize_energy(mol_name, mol_energy, atom_dict)
+        energy_list.append(atomize_energy)
+    return energy_list
+
+
+# 计算单个分子的原子化能
+def get_atomize_energy(mol_name, mol_energy, atom_dict):
+    atom_energy_sum = 0
+    i = 0
+    while i < len(mol_name):
+        atom = mol_name[i]
+        count = 1
+        i += 1
+        # 判断是否有小写字符
+        if i < len(mol_name) and 'z' > mol_name[i] > 'a':
+            atom += mol_name[i]
+            i += 1
+        # 判断是否有数字
+        if i < len(mol_name) and '9' > mol_name[i] > '0':
+            # 记录个数
+            count = int(mol_name[i])
+            i += 1
+        # print(atom)
+        atom_energy_sum += atom_dict.get(atom) * count
+    return atom_energy_sum - mol_energy
+
+
+# 构造原子能量映射
+def get_atom_dict(data, temp):
+    atom_dict = {}
+    for i in data.index:
+        atom_name = data['mol'][i]
+        atom_energy = data[temp][i]
+        atom_dict.update({atom_name: float(atom_energy)})
+    return atom_dict
+
+
+# 判断对象是否为Series
+def is_series(obj):
+    return isinstance(obj, pd.Series)
+
+
+# Series转list
+def to_list(obj):
+    return list(obj.values)
+
+
+# 指定alpha的训练函数
+def train_alpha(model, *, method, x_energy_list, y_energy_list, alpha, level='dt'):
+    energy_list = []
+    if is_series(x_energy_list):
+        x_energy_list = to_list(x_energy_list)
+    if is_series(y_energy_list):
+        y_energy_list = to_list(y_energy_list)
+
+    if level == 'dt':
+        low_card = 2
+        high_card = 3
+    elif level == 'tq':
+        low_card = 3
+        high_card = 4
+    elif level == 'q5':
+        low_card = 4
+        high_card = 5
+    elif level == '56':
+        low_card = 5
+        high_card = 6
+    else:
+        raise ValueError('Invalid level name')
+
+    model.update_card(low_card, high_card)
+    model.update_method(method)
+    for i in range(len(x_energy_list)):
+        x_energy = x_energy_list[i]
+        y_energy = y_energy_list[i]
+
+        model.update_energy(x_energy, y_energy)
+
+        energy = model.get_function(alpha)
+        energy_list.append(energy)
+    return energy_list
+
+
+def fun_model(alpha, model, x_energy_list, y_energy_list, temp):
+    energy_list = []
+    for i in range(len(x_energy_list)):
+        x_energy = x_energy_list[i]
+        y_energy = y_energy_list[i]
+        model.update_energy(x_energy, y_energy)
+        energy = model.get_function(alpha)
+        energy_list.append(energy)
+    return energy_list
+
+
+def loss_model(alpha, model, x_energy_list, y_energy_list, limit_list, temp):
+    energy_list = []
+    for i in range(len(x_energy_list)):
+        x_energy = x_energy_list[i]
+        y_energy = y_energy_list[i]
+        model.update_energy(x_energy, y_energy)
+        energy = model.get_function(alpha)
+        energy_list.append(energy)
+    if temp == 'RMSD':
+        result = calc_RMSE(limit_list, energy_list)
+    elif temp == 'MAD':
+        result = calc_MAD(limit_list, energy_list)
+    else:
+        return ValueError('Invalid assessment of indicators')
+    # print(result)
+    return result
+
+
+# 以MAD，RMSD为目标函数拟合
+def train_rmsd(model, *, method, x_energy_list, y_energy_list, limit_list, init_guess=0.001, level='dt', temp='RMSD'):
+    if is_series(x_energy_list):
+        x_energy_list = to_list(x_energy_list)
+    if is_series(y_energy_list):
+        y_energy_list = to_list(y_energy_list)
+    if is_series(limit_list):
+        limit_list = to_list(limit_list)
+
+    if level == 'dt':
+        low_card = 2
+        high_card = 3
+    elif level == 'tq':
+        low_card = 3
+        high_card = 4
+    elif level == 'q5':
+        low_card = 4
+        high_card = 5
+    elif level == '56':
+        low_card = 5
+        high_card = 6
+    else:
+        raise ValueError('Invalid level name')
+
+    model.update_method(method)
+    model.update_card(low_card, high_card)
+    # constraints = {'type': 'ineq', 'fun': lambda params: fun_model(init_guess, model, x_energy_list, y_energy_list, temp)}
+    result = least_squares(loss_model, x0=init_guess,
+                           args=(model, x_energy_list, y_energy_list,
+                                 limit_list, temp))
+    # result = minimize(loss_model, x0=init_guess,
+    #                   args=(model, x_energy_list, y_energy_list,
+    #                         limit_list, temp), bounds=[(1, 10)], constraints=constraints)
+    return result.x[0]

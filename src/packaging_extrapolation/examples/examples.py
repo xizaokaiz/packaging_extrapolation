@@ -1,6 +1,5 @@
 from packaging_extrapolation import UtilTools, Extrapolation
 import pandas as pd
-
 """
 外推法实例
 """
@@ -8,10 +7,12 @@ import pandas as pd
 if __name__ == '__main__':
     data = pd.read_csv(r'../data/hf.CSV')
     model = Extrapolation.FitMethod()
-    ext_energy_list = UtilTools.train_alpha(model,
-                                            method='Feller_1992',
-                                            x_energy_list=data['aug-cc-pvdz'],
-                                            y_energy_list=data['aug-cc-pvtz'],
-                                            alpha=1.367, level='dt')
+
+    method, x_energy_list, y_energy_list, alpha, level = 'Feller_1992', data['aug-cc-pvdz'], data['aug-cc-pvtz'], 1.367, 'dt'
+    ext_energy_list = UtilTools.train(model,
+                                      method=method,
+                                      x_energy_list=x_energy_list,
+                                      y_energy_list=y_energy_list,
+                                      alpha=alpha, level=level)
     for i in range(len(ext_energy_list)):
-        print('The extrapolated energy of {} is: {} Eh'.format(data['mol'][i], ext_energy_list[i]))
+        print(f"The extrapolated energy of {data['mol'][i]} is: {ext_energy_list[i]} Eh")

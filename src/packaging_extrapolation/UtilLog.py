@@ -121,7 +121,7 @@ def get_energy_values(source_folder):
 
 
 # 获取单个文件能量
-def get_log_values(source_file):
+def get_log_values(source_file,method_type):
     # 读取文件内容
     with open(source_file, 'r') as file:
         content = file.read()
@@ -142,14 +142,14 @@ def get_log_values(source_file):
             item = item.replace('\n', '').replace(' ', '')
             # 存储数据
             data.append(item)
-    HF = get_HF(data)
-    MP2 = get_MP2(data)
-    MP4 = get_MP4(data)
-    CCSD = get_CCSD(data)
-    CCSD_T = get_CCSD_T(data)
+    HF = float(get_HF(data))
+    MP2 = float(get_MP2(data))
+    MP4 = float(get_MP4(data))
+    CCSD = float(get_CCSD(data))
+    CCSD_T = float(get_CCSD_T(data))
     energy_dict = {'HF': HF, 'MP2': MP2, 'MP4': MP4, 'CCSD': CCSD,
                    'CCSD(T)': CCSD_T}
-    return energy_dict
+    return energy_dict.get(method_type)
 
 
 # 批量更改gjf内存
