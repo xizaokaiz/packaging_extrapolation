@@ -57,7 +57,7 @@ def main():
         high_card=params['high_cardinal_number'],
     )
     result = model.get_function(params['alpha'])
-    print(f"Extrapolation energy: {result}")
+    print(f"CBS Extrapolation energy: {result} Eh")
 
 
 if __name__ == "__main__":

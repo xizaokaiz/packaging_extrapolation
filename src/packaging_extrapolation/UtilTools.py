@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from packaging_extrapolation.Extrapolation import *
+from packaging_extrapolation.Extrapolation import FitMethod
 import numpy as np
 from sklearn.model_selection import KFold
 from scipy.optimize import least_squares
@@ -548,42 +549,6 @@ def to_list(obj):
     return list(obj.values)
 
 
-# 指定alpha的训练函数
-def train_alpha(model, *, method, x_energy_list, y_energy_list, alpha, level='dt'):
-    energy_list = []
-    if is_series(x_energy_list):
-        x_energy_list = to_list(x_energy_list)
-    if is_series(y_energy_list):
-        y_energy_list = to_list(y_energy_list)
-
-    if level == 'dt':
-        low_card = 2
-        high_card = 3
-    elif level == 'tq':
-        low_card = 3
-        high_card = 4
-    elif level == 'q5':
-        low_card = 4
-        high_card = 5
-    elif level == '56':
-        low_card = 5
-        high_card = 6
-    else:
-        raise ValueError('Invalid level name')
-
-    model.update_card(low_card, high_card)
-    model.update_method(method)
-    for i in range(len(x_energy_list)):
-        x_energy = x_energy_list[i]
-        y_energy = y_energy_list[i]
-
-        model.update_energy(x_energy, y_energy)
-
-        energy = model.get_function(alpha)
-        energy_list.append(energy)
-    return energy_list
-
-
 def fun_model(alpha, model, x_energy_list, y_energy_list, temp):
     energy_list = []
     for i in range(len(x_energy_list)):
@@ -647,3 +612,23 @@ def train_rmsd(model, *, method, x_energy_list, y_energy_list, limit_list, init_
     #                   args=(model, x_energy_list, y_energy_list,
     #                         limit_list, temp), bounds=[(1, 10)], constraints=constraints)
     return result.x[0]
+
+
+# 指定alpha的训练函数
+def train_alpha(model, *, method, x_energy_list, y_energy_list, alpha,low_card,high_card):
+    energy_list = []
+    if is_series(x_energy_list):
+        x_energy_list = to_list(x_energy_list)
+    if is_series(y_energy_list):
+        y_energy_list = to_list(y_energy_list)
+    model.update_card(low_card, high_card)
+    model.update_method(method)
+    for i in range(len(x_energy_list)):
+        x_energy = x_energy_list[i]
+        y_energy = y_energy_list[i]
+
+        model.update_energy(x_energy, y_energy)
+
+        energy = model.get_function(alpha)
+        energy_list.append(energy)
+    return energy_list
