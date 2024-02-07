@@ -1,8 +1,8 @@
 import os
 import re
-
-# 修改gif基组关键字，chk_sym：原chk标识,key_word:原key words处标识
+import pandas as pd
 import shutil
+from packaging_extrapolation import UtilLog
 
 
 def update_card(source_folder, target_folder, chk_sym, key_word, new_chk_sym, new_key_word=None):
@@ -121,7 +121,7 @@ def get_energy_values(source_folder):
 
 
 # 获取单个文件能量
-def get_log_values(source_file,method_type):
+def get_log_values(source_file, method_type):
     # 读取文件内容
     with open(source_file, 'r') as file:
         content = file.read()
@@ -265,3 +265,63 @@ def update_method(source_gjf, target_gjf, *, new_chk, old_method, new_method,
     # 更改文件名
     update_filename(target_gjf, old_method, new_method)
     update_filename(target_gjf, old_card, new_card)
+
+
+# 文件夹获取hf,mp2,ccsd,ccsd(t)能量
+def get_energy_values(source_folder):
+    for filename in os.listdir(source_folder):
+        # 读取文件内容
+        data = get_log_values(filename)
+
+
+# 获取单个文件能量
+def get_log_values(source_file):
+    # 读取文件内容
+    with open(source_file, 'r') as file:
+        content = file.read()
+
+    # 开始位置
+    start_index = content.find('1\\1')
+    # 存储数据的列表
+    data = []
+    # 判断找到指定位置
+    if start_index != -1:
+        # 从指定位置开始按 `\` 分割内容
+        split_content = content[start_index:].split('\\')
+        # 遍历分割结果
+        for item in split_content:
+            # 判断是否遇到结束标记
+            if item == '@':
+                break
+            item = item.replace('\n', '').replace(' ', '')
+            # 存储数据
+            data.append(item)
+    HF = get_HF(data)
+    MP2 = get_MP2(data)
+    MP4 = get_MP4(data)
+    CCSD = get_CCSD(data)
+    CCSD_T = get_CCSD_T(data)
+    energy_dict = {'HF': HF, 'MP2': MP2, 'MP4': MP4, 'CCSD': CCSD,
+                   'CCSD(T)': CCSD_T}
+    return energy_dict
+
+
+def extract_energy(input_path, output_path):
+    folder_path = input_path
+
+    data_df = pd.DataFrame(columns=['mol', 'HF', 'MP2', 'MP4', 'CCSD', 'CCSD(T)'])
+    i = 0
+    for file_name in os.listdir(folder_path):
+        data_df.at[i, 'mol'] = file_name
+        source_file_path = os.path.join(folder_path, file_name)
+        energy_dict = UtilLog.get_log_values(source_file_path)
+        data_df.at[i, 'HF'] = energy_dict.get('HF')
+        data_df.at[i, 'MP2'] = energy_dict.get('MP2')
+        data_df.at[i, 'MP4'] = energy_dict.get('MP4')
+        data_df.at[i, 'CCSD'] = energy_dict.get('CCSD')
+        data_df.at[i, 'CCSD(T)'] = energy_dict.get('CCSD(T)')
+        i += 1
+        print(energy_dict)
+    print(data_df)
+    data_df.to_csv(output_path, index=False)
+    return data_df
