@@ -8,8 +8,7 @@
 
 ## About
 
-* This package contains partial extrapolation methods in quantum chemistry.
-* This package is written using the extrapolation method proposed in the literature. Extrapolation to the CBS limit can be done by entering two successive energies.
+* This package contains partial extrapolation methods in quantum chemistry, written using the extrapolation method proposed in the literature. Extrapolation to the CBS limit can be done by entering two successive energies.
 
 ## Quickly Use
 
@@ -59,16 +58,21 @@ if __name__ == "__main__":
     # Input file.
     data = pd.read_csv('../data/hf.CSV')
 
+    # Extrapolation model.
     model = FitMethod()
-    method_name = 'Klopper_1986'
+    # The E(X) and E(Y).
     x_energy_list, y_energy_list = data['aug-cc-pvdz'], data['aug-cc-pvtz']
-    low_card, high_card, alpha = 2, 3, 4.25
+    # Using Klopper-1986 method and alpha=4.25, extrapolate to the CBS limit at the AV {D, T}Z basis set pair.
+    low_card, high_card, alpha, method_name = 2, 3, 4.25, 'Klopper_1986'
     result = UtilTools.train_alpha(model=model,
                                    method=method_name,
                                    x_energy_list=x_energy_list,
                                    y_energy_list=y_energy_list,
+                                   low_card=low_card,
+                                   high_card=high_card,
                                    alpha=alpha)
-    print(result)
+    for i in range(len(result)):
+        print(result[i], 'Eh')
     df = pd.DataFrame()
     df['CBS Energy'] = result
     # Output file.
@@ -78,15 +82,15 @@ if __name__ == "__main__":
 * The input file should be in `.csv` format and have the following content:
 
 ```python
-mol,aug-cc-pvdz,aug-cc-pvtz,aug-cc-pvqz,aug-cc-pv5z,aug-cc-pv6z
-HCN,-92.8880397,-92.9100033,-92.915489,-92.9166367,-92.9167832
-HCO,-113.2672513,-113.2947633,-113.3022304,-113.3039105,-113.3041055
-HNO,-129.8114596,-129.8401888,-129.8486338,-129.8505396,-129.8507611
-HO2,-150.2024221,-150.239531,-150.2495353,-150.2520093,-150.2522722
-N2O,-183.7105405,-183.7530387,-183.7649319,-183.7675527,-183.7678624
-NH2,-55.5749363,-55.5878344,-55.5911626,-55.5919484,-55.5920423
-NH3,-56.1972947,-56.2127423,-56.2164646,-56.217354,-56.2174645
-NO2,-204.0664514,-204.1137363,-204.1275371,-204.1305865,-204.1309424
+mol,aug-cc-pvdz,aug-cc-pvtz
+HCN,-92.8880397,-92.9100033
+HCO,-113.2672513,-113.2947633
+HNO,-129.8114596,-129.8401888
+HO2,-150.2024221,-150.239531
+N2O,-183.7105405,-183.7530387
+NH2,-55.5749363,-55.5878344
+NH3,-56.1972947,-56.2127423
+NO2,-204.0664514,-204.1137363
 ```
 
 
@@ -101,6 +105,7 @@ NO2,-204.0664514,-204.1137363,-204.1275371,-204.1305865,-204.1309424
 | `UtilTools.calc_MaxPosMAD(y_true, y_pred)`: Calculate the Maximum Positive Deviation (kcal/mol). |
 | `UtilTools.train_alpha(*,  model, method, x_energy_list, y_energy_list, alpha, low_card, high_card)`: Calculate extrapolated energy. |
 | `UtilLog.extract_energy(input_path, output_path)`: Extracting energy from many log files. |
+| `train_all(*, model, method, x_energy_list, y_energy_list, low_card, high_card, limit_list, init_guess=0.001, temp='RMSD')` : Optimizing extrapolation parameters with `RMSD` or `MAD`. |
 
 
 

@@ -291,7 +291,7 @@ def fun_model(alpha, model, x_energy_list, y_energy_list, temp):
 
 def loss_model(alpha, model, x_energy_list, y_energy_list, limit_list, temp):
     energy_list = []
-    for i in range(len(x_energy_list)):
+    for i in x_energy_list.index:
         x_energy = x_energy_list[i]
         y_energy = y_energy_list[i]
         model.update_energy(x_energy, y_energy)
@@ -333,3 +333,15 @@ def train_alpha(*, model, method, x_energy_list, y_energy_list, alpha, low_card,
         CBS_energy.append(energy)
     return CBS_energy
 
+
+def train_all(*, model, method, x_energy_list, y_energy_list, low_card, high_card, limit_list, init_guess=0.001, temp='RMSD'):
+
+    model.update_method(method)
+    model.update_card(low_card, high_card)
+    result = least_squares(loss_model, x0=init_guess,
+                           args=(model, x_energy_list, y_energy_list,
+                                 limit_list, temp))
+    # result = minimize(loss_model, x0=init_guess,
+    #                   args=(model, x_energy_list, y_energy_list,
+    #                         limit_list, temp), bounds=[(1, 10)], constraints=constraints)
+    return result.x[0]

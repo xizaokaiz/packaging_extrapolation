@@ -1,7 +1,6 @@
 from packaging_extrapolation import UtilTools
 from packaging_extrapolation.Extrapolation import FitMethod
 import pandas as pd
-import numpy as np
 
 """
 Calculate more systems.
@@ -19,8 +18,11 @@ if __name__ == "__main__":
                                    method=method_name,
                                    x_energy_list=x_energy_list,
                                    y_energy_list=y_energy_list,
+                                   low_card=low_card,
+                                   high_card=high_card,
                                    alpha=alpha)
-    print(result)
+    for i in range(len(result)):
+        print(result[i], 'Eh')
     df = pd.DataFrame()
     df['CBS Energy'] = result
     # Output file.

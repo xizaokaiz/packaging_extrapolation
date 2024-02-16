@@ -13,7 +13,7 @@ description = "Extrapolation methods for complete basis sets"
 readme = "README.md"
 requires-python = ">=3.6"
 license = {file = "LICENSE"}
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
     "numpy","pandas","scipy","scikit-learn","matplotlib"
 ]
