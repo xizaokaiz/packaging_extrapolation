@@ -23,7 +23,7 @@
   * `-high`: cardinal number for Y.
   * `-a`: extrapolation parameter alpha/beta.
 
-## Ten Extrapolation Schemes
+## Tow-Point Extrapolation Schemes
 
 | Method                      | Two-point From                                               | Name            |                          Reference                           |
 | :-------------------------- | :----------------------------------------------------------- | --------------- | :----------------------------------------------------------: |
