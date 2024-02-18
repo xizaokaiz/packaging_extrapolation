@@ -12,8 +12,8 @@
 
 ## Quickly Use
 
-* Please use the `pip` command to install: `pip install packaging_extrapolation` or `python3 -m pip install packaging_extrapolation`
-* Please make sure the package is the latest: `pip install --upgrade packaging_extrapolation`
+* Please use the `pip` command to install: `pip install packaging-extrapolation` or `python3 -m pip install packaging-extrapolation`
+* Please make sure the package is the latest: `pip install --upgrade packaging-extrapolation`
 * After installation, test the example in `src/packaging_extrapolation/examples/examples_energy.py` to see if you get results.
   * Extrapolation Method Calls: `python  examples_energy.py -m "Klopper_1986" -xe -76.0411795 -ye -76.0603284 -low 2 -high 3 -a 4.25`
   * `-m`: extrapolation method name.
