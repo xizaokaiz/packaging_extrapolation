@@ -105,7 +105,7 @@ NO2,-204.0664514,-204.1137363
 | `UtilTools.calc_MaxPosMAD(y_true, y_pred)`: Calculate the Maximum Positive Deviation (kcal/mol). |
 | `UtilTools.train_alpha(*,  model, method, x_energy_list, y_energy_list, alpha, low_card, high_card)`: Calculate extrapolated energy. |
 | `UtilLog.extract_energy(input_path, output_path)`: Extracting energy from many log files. |
-| `train_all(*, model, method, x_energy_list, y_energy_list, low_card, high_card, limit_list, init_guess=0.001, temp='RMSD')` : Optimizing extrapolation parameters with `RMSD` or `MAD`. |
+| `UtilLog.train_all(*, model, method, x_energy_list, y_energy_list, low_card, high_card, limit_list, init_guess=0.001, temp='RMSD')` : Optimizing extrapolation parameters with `RMSD` or `MAD`. |
 
 
 
