@@ -9,7 +9,7 @@
 ## About
 
 * This package contains partial extrapolation methods in quantum chemistry, written using the extrapolation method proposed in the literature. Extrapolation to the CBS limit can be done by entering two successive energies.
-
+* Additionally, the web calculator is currently under development...
 ## Quickly Use
 
 * Please use the `pip` command to install: `pip install packaging-extrapolation` or `python3 -m pip install packaging-extrapolation`
